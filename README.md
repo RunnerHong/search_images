@@ -14,4 +14,11 @@ search images by one image
 ## 运行：
 1、启动elasticsearch
 
-2、待完善。。
+2、将图片放入/static/images/中，然后跑python3 migrate.py进行建库与保存图片特征
+
+3、python app.py
+
+4、打开 http://127.0.0.1:5000/ ，然后进行测试
+
+## 示例
+todo
