@@ -81,13 +81,12 @@ class Store(object):
                     "_source": {
                                     "relation_id": idx,
                                     "embedding_vector": feature_encode,
-                                    "image_path": os.path.join(
-                                        self.images_path, idx)
+                                    "image_path": f'/static/images/{idx}'
                                 }
                 }
                 actions.append(action)
         except BaseException as e:
-            print(e)
+            print('插入数据失败')
             pass
         succeed_num = 0
         for ok, response in helpers.streaming_bulk(es, actions):
@@ -99,11 +98,8 @@ class Store(object):
                 print("本次更新了{0}条数据".format(succeed_num))
                 es.indices.refresh('index_test')
 
-    def search(self):
-        listdir = os.listdir(self.images_path)
-        print(listdir[0])
-        feature = Vgg16Model().extract_feature(
-            os.path.join(self.images_path, listdir[0])).flatten()
+    def search(self, image_path):
+        feature = Vgg16Model().extract_feature(image_path).flatten()
         res = es.search(index=self.index, body={
             "query": {
                 "function_score": {

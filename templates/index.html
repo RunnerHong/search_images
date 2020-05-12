@@ -9,17 +9,67 @@
         <input type="file" id="SearchImage" name="image_search" multiple>
         <img hidden src="" class="img" />
         <p>Drag your files here or click in this area.</p>
-        <button type="submit">Upload</button>
+        <button type="submit">Search</button>
     </form>
+    <div><p>The Search Result:</p></div>
+    <table>
+<!--        <tr class="img">-->
+<!--            <td><img hidden src=""/></td>-->
+<!--            <td><img hidden src=""/></td>-->
+<!--            <td><img hidden src=""/></td>-->
+<!--            <td><img hidden src=""/></td>-->
+<!--            <td><img hidden src=""/></td>-->
+<!--        </tr>-->
+<!--        <tr class="text">-->
+<!--            <td><p hidden>相识度:1</p></td>-->
+<!--            <td><p hidden>相识度:1</p></td>-->
+<!--            <td><p hidden>相识度:1</p></td>-->
+<!--            <td><p hidden>相识度:1</p></td>-->
+<!--            <td><p hidden>相识度:1</p></td>-->
+<!--        </tr>-->
+    </table>
 </body>
 </html>
 <style>
     body{
         background: rgba(0,0,0,0.9);
     }
+    table{
+        position: absolute;
+        top: 50%;
+        left: 10%;
+    }
+    div {
+        position: absolute;
+        top: 42%;
+        left: 10%;
+    }
+    div p{
+        width: 100%;
+        height: 100%;
+        text-align: left;
+        color: #ffffff;
+        font-family: Arial;
+        margin-left: 10px;
+    }
+    table img {
+        width: 250px;
+        height: 250px;
+        margin-left:5px;
+        margin-right:5px;
+        margin-top:5px;
+        margin-bottom:5px;
+    }
+    table p{
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        color: #ffffff;
+        font-family: Arial;
+    }
     form{
         position: absolute;
-        top: 30%;
+        top: 20%;
         left: 50%;
         margin-top: -100px;
         margin-left: -250px;
@@ -98,10 +148,11 @@
                }
         });
         $('form button').on('click', null, function() {
-            console.log($('form .img').attr("src"));
-            if ($('form .img').attr("src") == null) {
+            if ($('form .img').attr("src") == "") {
+                alert("请选择图片");
                 return;
             }
+            $('table').empty()
             var formData = new FormData();
             var url = $("form").attr("action");
             formData.append('image_search', $('form .img').attr("src"));
@@ -113,9 +164,22 @@
                 processData: false,
                 success: function(data) {
                     if (data.type == "success") {
-                        alert(data);
+                        var list = data.hits.hits;
+                        console.log(list.length)
+                        var $tr=[];
+                        var $tdi = $('<tr class="img"></tr>');
+                        var $td = $('<tr class="text"></tr>');
+                        for(var i=0; i<list.length; i++) {
+                            $('<td><img src='+list[i]._source.image_path+'/></td>').appendTo($tdi);
+                            $('<td><p>'+list[i]._source.relation_id+'</p></td>').appendTo($td);
+                        };
+                        $tr.push($tdi);
+                        $tr.push($td);
+                        for(var j=0;j<$tr.length;j++){
+                            $($tr[j]).appendTo($('table'));
+                        };
                     } else {
-                        alert(data.msg);
+                        alert("查找失败");
                     }
                 },
                 error:function(data) {
