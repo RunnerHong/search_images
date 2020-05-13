@@ -5,10 +5,12 @@
 # @File    : feature
 # @Project : search_images
 # coding=utf-8
+import math
 import os
 import pprint
 
 from elasticsearch import Elasticsearch, helpers
+from multiprocessing import Process, Manager, cpu_count
 from model import Vgg16Model
 import base64
 import numpy as np
@@ -65,10 +67,7 @@ class Store(object):
     def create_index(self):
         es.indices.create(index=self.index, body=body, include_type_name=True)
 
-    def save_feature(self):
-        listdir = os.listdir(self.images_path)
-        print(listdir)
-        actions = []
+    def extract_action(self, actions, listdir):
         try:
             for idx in listdir:
                 feature = Vgg16Model().extract_feature(os.path.join(
@@ -79,15 +78,30 @@ class Store(object):
                     "_index": self.index,
                     "_type": "_doc",
                     "_source": {
-                                    "relation_id": idx,
-                                    "embedding_vector": feature_encode,
-                                    "image_path": f'/static/images/{idx}'
-                                }
+                        "relation_id": idx,
+                        "embedding_vector": feature_encode,
+                        "image_path": f'/static/images/{idx}'
+                    }
                 }
                 actions.append(action)
         except BaseException as e:
             print('插入数据失败')
             pass
+
+    def save_feature(self):
+        listdir = os.listdir(self.images_path)
+        print(listdir)
+        manager = Manager()
+        actions = manager.list()
+        split = math.ceil(len(listdir) / cpu_count())
+        jobs = []
+        for i in range(0, len(listdir), split):
+            p = Process(
+                target=self.extract_action, args=(actions, listdir[i: i+split]))
+            jobs.append(p)
+            p.start()
+        for p in jobs:
+            p.join()
         succeed_num = 0
         for ok, response in helpers.streaming_bulk(es, actions):
             if not ok:
@@ -98,7 +112,7 @@ class Store(object):
                 print("本次更新了{0}条数据".format(succeed_num))
                 es.indices.refresh('index_test')
 
-    def search(self, image_path):
+    def search(self, image_path, size=5):
         feature = Vgg16Model().extract_feature(image_path).flatten()
         res = es.search(index=self.index, body={
             "query": {
@@ -123,7 +137,7 @@ class Store(object):
                     "image_path"
                 ]
             },
-            "size": 5
+            "size": size
         })
         print("Got %d Hits:" % res['hits']['total']['value'])
         print(res['hits'])
