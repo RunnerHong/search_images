@@ -11,7 +11,7 @@ import pprint
 
 from elasticsearch import Elasticsearch, helpers
 from multiprocessing import Process, Manager, cpu_count
-from model import Vgg16Model
+from model import Model
 import base64
 import numpy as np
 
@@ -60,9 +60,13 @@ body = {
 
 class Store(object):
 
-    def __init__(self, index='index_test', images_path=local_images_path):
+    def __init__(self, index='index_test', images_path=local_images_path,
+                 model_name='vgg16'):
         self.index = index
         self.images_path = images_path
+        # 这里加self.model好像影响多进程
+        # self.model = Model(name=model_name)
+        self.model_name = model_name
 
     def create_index(self):
         es.indices.create(index=self.index, body=body, include_type_name=True)
@@ -70,7 +74,7 @@ class Store(object):
     def extract_action(self, actions, listdir):
         try:
             for idx in listdir:
-                feature = Vgg16Model().extract_feature(os.path.join(
+                feature = Model(name=self.model_name).extract_feature(os.path.join(
                     self.images_path, idx)).flatten().tolist()
                 feature_encode = encode_array(feature)
                 action = {
@@ -113,7 +117,7 @@ class Store(object):
                 es.indices.refresh('index_test')
 
     def search(self, image_path, size=5):
-        feature = Vgg16Model().extract_feature(image_path).flatten()
+        feature = Model(name=self.model_name).extract_feature(image_path).flatten()
         res = es.search(index=self.index, body={
             "query": {
                 "function_score": {

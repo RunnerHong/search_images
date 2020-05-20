@@ -7,6 +7,7 @@
 import torch
 import torch.nn
 import torchvision.models as models
+from torch import nn
 from torch.autograd import Variable
 import torch.cuda
 import torchvision.transforms as transforms
@@ -17,15 +18,28 @@ TARGET_IMG_SIZE = 224
 img_to_tensor = transforms.ToTensor()
 
 
-class Vgg16Model(object):
+class Model(object):
 
-    def __init__(self):
-        self.model = self.make_model()
+    def __init__(self, name='vgg16'):
+        self.model = self.make_model(name)
 
-    def make_model(self):
-        # 其实就是定位到第28层，对照着上面的key看就可以理解
-        model = models.vgg16(pretrained=True).features[:28]
-        # print(model)
+    def make_model(self, name):
+        if name == 'vgg16':
+            # model = models.vgg16(pretrained=True).features
+            # print(models.vgg16(pretrained=True).features)
+            # 其实就是定位到第28层，对照着上面的key看就可以理解
+            model = models.vgg16(pretrained=True).features[:28]
+            # print(model)
+        elif name == 'densenet121':
+            model = models.densenet121(pretrained=True).features
+            # print(model)
+        elif name == 'resnet50':
+            resnet = models.resnet50(pretrained=True)
+            modules = list(resnet.children())[:-1]   # delete the last fc layer.
+            model = nn.Sequential(*modules)
+            # print(model)
+        else:
+            raise KeyError
         model = model.eval()  # 一定要有这行，不然运算速度会变慢（要求梯度）而且会影响结果
         if torch.cuda.is_available():
             model.cuda()  # 将模型从CPU发送到GPU,如果没有GPU则删除该行
@@ -55,3 +69,7 @@ class Vgg16Model(object):
         # img = Image.fromarray(result_npy[0], 'RGB')
         # img.show()
         return result_npy[0] # 返回的矩阵shape是[1, 512, 14, 14]，这么做是为了让shape变回[512, 14,14]
+
+
+if __name__ == '__main__':
+    model = Model('vgg16')

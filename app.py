@@ -13,7 +13,7 @@ from store import Store
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db = Store()
+db = Store(model_name='vgg16')
 
 
 @app.route('/')

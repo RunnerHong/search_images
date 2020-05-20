@@ -12,7 +12,7 @@ from multiprocessing import Manager, cpu_count, Process
 
 from store import Store
 
-db = Store()
+db = Store(model_name='vgg16')
 
 
 def test_vgg16_by_thread_pool():
