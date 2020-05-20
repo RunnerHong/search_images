@@ -23,6 +23,11 @@ search images by one image
 ## 示例
 todo: add test_url
 
+掌纹识别：
+
+![](static/result/result1.png)
+![](static/result/result.png)
+
 ## 准确率结果
 五中三以上（100类图片，每类6张，每类一张去找其它五张，三张对，才算对。）：
 
