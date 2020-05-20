@@ -32,7 +32,7 @@ def test_vgg16_by_process_pool():
     result = list(pool.map(count_right_by_path, search_paths))
     end = time.time()
     print(sum(result) / 100)  # 准确率0.99
-    print('使用多进程程--timestamp:{:.3f}'.format(end-start))  # 130.886
+    print('使用多进程--timestamp:{:.3f}'.format(end-start))  # 130.886
 
 
 def count_right_by_path(path):
@@ -74,7 +74,7 @@ def test_vgg16():
         p.join()
     end = time.time()
     print(sum(result) / 100)  # 准确率0.99
-    print('使用共享list多进程程--timestamp:{:.3f}'.format(end-start))  # 74.461s
+    print('使用共享list多进程--timestamp:{:.3f}'.format(end-start))  # 74.461s
 
 
 def count_right(search_paths, result):
