@@ -14,13 +14,15 @@ import torchvision.transforms as transforms
 
 from PIL import Image
 
+from config import model_name
+
 TARGET_IMG_SIZE = 224
 img_to_tensor = transforms.ToTensor()
 
 
 class Model(object):
 
-    def __init__(self, name='vgg16'):
+    def __init__(self, name=model_name):
         self.model = self.make_model(name)
 
     def make_model(self, name):
@@ -30,6 +32,8 @@ class Model(object):
             # 其实就是定位到第28层，对照着上面的key看就可以理解
             model = models.vgg16(pretrained=True).features[:28]
             # print(model)
+        elif name == 'alexnet':
+            model = models.AlexNet().features
         elif name == 'densenet121':
             model = models.densenet121(pretrained=True).features
             # print(model)

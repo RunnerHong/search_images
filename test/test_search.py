@@ -2,7 +2,7 @@
 # @Time    : 2020/5/13 11:46
 # @Author  : 洪英杰
 # @Python  : 3.7.5
-# @File    : test_vgg16
+# @File    : test_search
 # @Project : search_images
 import math
 import time
@@ -10,29 +10,30 @@ from concurrent.futures.process import ProcessPoolExecutor
 from concurrent.futures.thread import ThreadPoolExecutor
 from multiprocessing import Manager, cpu_count, Process
 
+from config import model_name
 from store import Store
 
-db = Store(model_name='vgg16')
+db = Store(model_name=model_name)
 
 
-def test_vgg16_by_thread_pool():
+def test_search_by_thread_pool():
     search_paths = get_search_paths()
     pool = ThreadPoolExecutor(max_workers=12)
     start = time.time()
     result = list(pool.map(count_right_by_path, search_paths))
     end = time.time()
-    print(sum(result) / 100)  # 准确率0.99
-    print('使用多线程--timestamp:{:.3f}'.format(end-start))  # 83.691
+    print(sum(result) / 100)  # vgg16 准确率0.99
+    print('使用多线程--timestamp:{:.3f}'.format(end-start))  # vgg16 83.691
 
 
-def test_vgg16_by_process_pool():
+def test_search_by_process_pool():
     search_paths = get_search_paths()
     pool = ProcessPoolExecutor(max_workers=12)
     start = time.time()
     result = list(pool.map(count_right_by_path, search_paths))
     end = time.time()
-    print(sum(result) / 100)  # 准确率0.99
-    print('使用多进程--timestamp:{:.3f}'.format(end-start))  # 130.886
+    print(sum(result) / 100)  # vgg16 准确率0.99
+    print('使用多进程--timestamp:{:.3f}'.format(end-start))  # vgg16 130.886
 
 
 def count_right_by_path(path):
@@ -60,26 +61,29 @@ def get_search_paths():
     return search_paths
 
 
-def test_vgg16():
+def test_search():
     search_paths = get_search_paths()
     result = Manager().list()
     split = math.ceil(len(search_paths) / cpu_count())
     jobs = []
     start = time.time()
+    # split = 1  # 一定要放开break
     for i in range(0, len(search_paths), split):
         p = Process(target=count_right, args=(search_paths[i: i+split], result))
         jobs.append(p)
         p.start()
+        # break
     for p in jobs:
         p.join()
     end = time.time()
-    print(sum(result) / 100)  # 准确率0.99
-    print('使用共享list多进程--timestamp:{:.3f}'.format(end-start))  # 74.461s
+    print(sum(result) / 100)  # vgg16 准确率0.99
+    print('使用共享list多进程--timestamp:{:.3f}'.format(end-start))  # vgg16 74.461s
 
 
 def count_right(search_paths, result):
     for path in search_paths:
         res = db.search(f'../static/images/{path}', size=6)
+        # return
         count = 0
         print(path[0: 3])
         for hit in res['hits']['hits']:
@@ -92,6 +96,6 @@ def count_right(search_paths, result):
 
 
 if __name__ == '__main__':
-    test_vgg16()  # 74.461s
-    # test_vgg16_by_thread_pool() # 83.691s
-    # test_vgg16_by_process_pool()  # 130.886s
+    test_search()  # vgg16 74.461s
+    # test_search_by_thread_pool() # vgg16 83.691s
+    # test_search_by_process_pool()  # vgg16 130.886s

@@ -11,17 +11,23 @@ import pprint
 
 from elasticsearch import Elasticsearch, helpers
 from multiprocessing import Process, Manager, cpu_count
+
+from skimage import img_as_float
+
 from model import Model
 import base64
 import numpy as np
+from config import model_name
 
 # http_auth = ("elastic", "123455")
 # es = Elasticsearch("http://127.0.0.1:9200", http_auth=http_auth)
+from test.test_gabor_hamming import get_image_feature
+
 es = Elasticsearch("http://127.0.0.1:9200")
-# images_path = '/home/runner/Pictures/search'
-# images_path = '/media/runner/新加卷/school/homework/cv/BMP600'
+# images_dir = '/home/runner/Pictures/search'
+# images_dir = '/media/runner/新加卷/school/homework/cv/BMP600'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-local_images_path = f'{BASE_DIR}/static/images/'
+local_images_dir = f'{BASE_DIR}/static/images/'
 
 
 dfloat32 = np.dtype('>f4')
@@ -60,10 +66,10 @@ body = {
 
 class Store(object):
 
-    def __init__(self, index='index_test', images_path=local_images_path,
-                 model_name='vgg16'):
+    def __init__(self, index='index_test', images_dir=local_images_dir,
+                 model_name=model_name):
         self.index = index
-        self.images_path = images_path
+        self.images_dir = images_dir
         # 这里加self.model好像影响多进程
         # self.model = Model(name=model_name)
         self.model_name = model_name
@@ -74,8 +80,7 @@ class Store(object):
     def extract_action(self, actions, listdir):
         try:
             for idx in listdir:
-                feature = Model(name=self.model_name).extract_feature(os.path.join(
-                    self.images_path, idx)).flatten().tolist()
+                feature = self.get_feature_list(os.path.join(self.images_dir, idx))
                 feature_encode = encode_array(feature)
                 action = {
                     "_op_type": "index",
@@ -93,17 +98,19 @@ class Store(object):
             pass
 
     def save_feature(self):
-        listdir = os.listdir(self.images_path)
+        listdir = os.listdir(self.images_dir)
         print(listdir)
         manager = Manager()
         actions = manager.list()
         split = math.ceil(len(listdir) / cpu_count())
+        # split = 1  # for test,一定要把下面的break放开，不然会爆炸。
         jobs = []
         for i in range(0, len(listdir), split):
             p = Process(
                 target=self.extract_action, args=(actions, listdir[i: i+split]))
             jobs.append(p)
             p.start()
+            # break
         for p in jobs:
             p.join()
         succeed_num = 0
@@ -116,8 +123,18 @@ class Store(object):
                 print("本次更新了{0}条数据".format(succeed_num))
                 es.indices.refresh('index_test')
 
+    def get_feature_list(self, image_path):
+        if self.model_name == 'gabor':
+            feature = get_image_feature(image_path).flatten()
+            feature = img_as_float(feature).tolist() #fix classjava.lang.Integer cannot be cast to class java.lang.Double
+        else:
+            feature = Model(name=self.model_name).extract_feature(image_path).flatten().tolist()
+        return feature
+
     def search(self, image_path, size=5):
-        feature = Model(name=self.model_name).extract_feature(image_path).flatten()
+        feature = self.get_feature_list(image_path)
+        print(len(feature))
+        # return
         res = es.search(index=self.index, body={
             "query": {
                 "function_score": {
@@ -129,7 +146,7 @@ class Store(object):
                             "params": {
                                 "cosine": True,
                                 "field": "embedding_vector",
-                                "vector": feature.tolist()
+                                "vector": feature
                             }
                         }
                     }

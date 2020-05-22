@@ -9,11 +9,13 @@ import os
 import uuid
 
 from flask import Flask, render_template, request
+
+from config import model_name
 from store import Store
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db = Store(model_name='vgg16')
+db = Store(model_name=model_name)
 
 
 @app.route('/')

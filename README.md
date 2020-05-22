@@ -31,11 +31,20 @@ todo: add test_url
 ## 准确率结果
 五中三以上（100类图片，每类6张，每类一张去找其它五张，三张对，才算对。）：
 
-densenet121: 0.88  (使用共享list多进程--timestamp:321.238)
+densenet121: 0.88  (使用共享list多进程--timestamp:321.238s) len(feature.flatten
+())=50176
 
-vgg16: 0.99 (使用共享list多进程--timestamp:74.461s)
+vgg16: 0.99 (使用共享list多进程--timestamp:74.461s) len(feature.flatten())=100352
 
-resnet50: 0.61 (使用共享list多进程--timestamp:174.080s)
+resnet50: 0.61 (使用共享list多进程--timestamp:174.080s) len(feature.flatten())=2048
+
+alexnet: 0.0 (使用共享list多进程--timestamp:23.296s) len(feature.flatten())=9216
+
+gabor filter: 0.94 (使用共享list多进程--timestamp:2.128) len(feature.flatten())=16384
+
+原图： 0.66 (使用共享list多进程--timestamp:0.708) len(feature.flatten())==16384 
+
+另：gabor提取，hamming求距离: 0.87
 
 感觉应该是哪里出问题了，理论上densenet121会优于resnet50优于vgg16
 ，但结果却不是这样。难道是因为densenet121与resnet50输出的特征量少，不易区分，

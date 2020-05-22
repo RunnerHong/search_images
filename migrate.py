@@ -4,11 +4,12 @@
 # @Python  : 3.7.5
 # @File    : migrate
 # @Project : search_images
+from config import model_name
 from store import Store
 
 
 if __name__ == '__main__':
-    db = Store()
+    db = Store(model_name=model_name)
     db.delete_index()
     db.create_index()
     db.save_feature()
