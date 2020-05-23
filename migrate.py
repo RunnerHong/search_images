@@ -9,7 +9,7 @@ from store import Store
 
 
 if __name__ == '__main__':
-    db = Store(model_name=model_name)
-    db.delete_index()
+    db = Store(index=model_name, model_name=model_name)
+    # db.delete_index()
     db.create_index()
     db.save_feature()

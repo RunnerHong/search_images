@@ -29,23 +29,18 @@ todo: add test_url
 ![](static/result/result.png)
 
 ## 准确率结果
-五中三以上（100类图片，每类6张，每类一张去找其它五张，三张对，才算对。）：
+五中三以上（100类图片，每类6张，每类一张去找其它五张，至少三张正确，才算正确。):
 
-densenet121: 0.88  (使用共享list多进程--timestamp:321.238s) len(feature.flatten
-())=50176
+ 模型  | 百次查找平均准确率  | 特征量len(feature.flatten()) | 百次查找耗时
+ ---- | ----- | ------ | ------ 
+ 原图  | 0.66 | 16384  | 0.708s
+ alexnet  | 0.0 | 9216  | 23.296s
+ vgg16  | 0.99 | 100352  | 74.461s
+ resnet50  | 0.61 | 2048  | 174.080s
+ densenet121  | 0.88 | 50176 | 321.238s
+ 另：gabor  | 0.94 | 16384  | 2.128s
+ 另：gabor-hamming | 0.87 | -  | -
+ 
 
-vgg16: 0.99 (使用共享list多进程--timestamp:74.461s) len(feature.flatten())=100352
-
-resnet50: 0.61 (使用共享list多进程--timestamp:174.080s) len(feature.flatten())=2048
-
-alexnet: 0.0 (使用共享list多进程--timestamp:23.296s) len(feature.flatten())=9216
-
-gabor filter: 0.94 (使用共享list多进程--timestamp:2.128) len(feature.flatten())=16384
-
-原图： 0.66 (使用共享list多进程--timestamp:0.708) len(feature.flatten())==16384 
-
-另：gabor提取，hamming求距离: 0.87
-
-感觉应该是哪里出问题了，理论上densenet121会优于resnet50优于vgg16
-，但结果却不是这样。难道是因为densenet121与resnet50输出的特征量少，不易区分，
-因为我是用相识的图片去测试。
+感觉应该是哪里出问题了，难道是因为densenet121与resnet50输出的特征量少，
+我是用相识的图片去测试，不易区分。

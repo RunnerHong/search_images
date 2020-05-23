@@ -28,7 +28,7 @@ class Model(object):
     def make_model(self, name):
         if name == 'vgg16':
             # model = models.vgg16(pretrained=True).features
-            # print(models.vgg16(pretrained=True).features)
+            # print(model)
             # 其实就是定位到第28层，对照着上面的key看就可以理解
             model = models.vgg16(pretrained=True).features[:28]
             # print(model)

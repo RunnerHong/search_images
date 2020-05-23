@@ -15,7 +15,7 @@ from store import Store
 
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db = Store(model_name=model_name)
+db = Store(index=model_name, model_name=model_name)
 
 
 @app.route('/')

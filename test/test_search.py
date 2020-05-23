@@ -13,7 +13,7 @@ from multiprocessing import Manager, cpu_count, Process
 from config import model_name
 from store import Store
 
-db = Store(model_name=model_name)
+db = Store(index=model_name, model_name=model_name)
 
 
 def test_search_by_thread_pool():

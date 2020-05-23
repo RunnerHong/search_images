@@ -121,7 +121,7 @@ class Store(object):
             else:
                 succeed_num += 1
                 print("本次更新了{0}条数据".format(succeed_num))
-                es.indices.refresh('index_test')
+                es.indices.refresh(self.index)
 
     def get_feature_list(self, image_path):
         if self.model_name == 'gabor':
